@@ -1,9 +1,11 @@
 import pickle
 import time
 import os
+from os import path
 import sys
 import select
 import random
+from mpyg321.mpyg321 import MPyg321Player
 
 class Task():
     """ Represents a task a user wants to complete
@@ -72,19 +74,8 @@ class EarnIt():
         os.system('clear')
         self.timestep = -1
         self.last_alert = 0
-        if self.has_save():
-            self.user = pickle.load(open(self.has_save(), 'rb'))
-        else:
-            self.user = self.construct_from_cdl()
-        t1 = Task(5, 5, "Jacks", 2.0, 1.0, 5)
-        t2 = Task(-1, 5, "Johns", 3.0, 1.0, 5)
-        self.user.add_task(t1)
-        self.user.add_task(t2)
+        self.user = self.construct_from_cdl()
         self.loop()
-
-    def has_save(self):
-        """ Discovers any save files and returns their names"""
-        return False
 
     def save(self):
         """ Writes all program data to disk to save the current user's state"""
@@ -92,15 +83,22 @@ class EarnIt():
 
     def construct_from_cdl(self):
         """ Leads user through 'signup' on CDL and adds tasks """
+        load = sys.argv[-1]
+        if path.exists(f"{load}.pkl"):
+            return pickle.load(open(f"{load}.pkl", 'rb'))
         print("Hi! Welcome to EarnIt: an easy way to reward yourself for completing your goals")
         print("We just need a name to get started so...")
         name = input("What should I call you? ")
         currency = input("Oh and also, what symbol do you want to use for currency? ")
-        return User(name, currency)
+        if path.exists(f"{name}.pkl"):
+            return pickle.load(open(f"{name}.pkl", 'rb'))
+        else:
+            return User(name, currency)
 
     def alert_if_ready(self):
         """ Alerts the user if the timestep has passed """
         if time.time() - self.last_alert > self.timestep and self.timestep is not -1:
+            player.play_song("alert.mp3")
             print("Yoohoo it's time for you to do something!")
             r = input("Do you:\n\t1: want a random tasks\n\t2: want to select one\nEnter: ") is '1'
             t = None
@@ -190,6 +188,10 @@ class EarnIt():
         self.user.print_progresses()
         input("Press enter to return to the menu...")
 
+    def exit(self):
+        """ Exits the program """
+        os._exit(0)
+
     def get_menu_selection(self):
         """ Prints a menu for the user to begin using the program """
         options = {
@@ -200,6 +202,7 @@ class EarnIt():
             "Show me my tasks": self.show_tasks,
             "Show me my performance": self.show_progress,
             "Configure alerts": self.set_timestep,
+            "Quit": self.exit,
         }
         for i, o in enumerate(options.keys()):
             print(f'{i+1}: {o}')
@@ -229,4 +232,5 @@ class EarnIt():
     
 
 if __name__ == '__main__':
+    player = MPyg321Player()
     program = EarnIt()
