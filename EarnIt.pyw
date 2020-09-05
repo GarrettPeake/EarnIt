@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pickle
 import time
 import os
@@ -63,6 +65,7 @@ class EarnIt():
     """ Class to run the EarnIt GUI """
     
     def __init__(self):
+        self.path = os.path.realpath(__file__)[:-10]
         self.timestep = -1
         self.r_choice = None
         self.alerting = False
@@ -75,12 +78,12 @@ class EarnIt():
 
     def save(self):
         """ Writes all program data to disk to save the current user's state"""
-        pickle.dump(self.user, open(f'user.pkl', 'wb'))
+        pickle.dump(self.user, open(f'{self.path}user.pkl', 'wb'))
 
     def load_or_enroll(self):
         """ Leads user through 'signup' in GUI if no file found"""
-        if path.exists(f"user.pkl"):
-            self.user = pickle.load(open(f"user.pkl", 'rb'))
+        if path.exists(f"{self.path}user.pkl"):
+            self.user = pickle.load(open(f"{self.path}user.pkl", 'rb'))
             return
         root = tk.Tk()
         root.resizable(False, False)
@@ -162,7 +165,7 @@ class EarnIt():
             # Bring the window to the front
             self.root.lift()
             # Play an alert sound
-            player.play_song("alert.mp3")
+            player.play_song(f"{self.path}alert.mp3")
             # Choose a random task
             self.r_choice = random.choice(self.user.tasks)
             self.alert_box['text'] = 'Time to do something!!\nRandom choice highlighted\nDoing any task will clear alert'
